@@ -1,0 +1,70 @@
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import json
+
+class MyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/":
+            try:
+                with open('admin.html', 'rb') as f:
+                    content = f.read()
+
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+
+                self.wfile.write(content)
+
+            except FileNotFoundError:
+                self.send_response(404)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b'File not found.')
+
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def do_POST(self):
+        if self.path == "/submit":
+            content_length = int(self.headers['Content-Length'])
+            body = self.rfile.read(content_length).decode('utf-8')
+            data = json.loads(body)
+
+            nama = data.get('nama')
+            password = data.get('pass')
+
+            arek = []
+            for i in range(1, 33):
+                code = "0" + str(i) + "/9F"
+                if len(str(i)) == 2:
+                    code = str(i) + "/9F"
+                arek.append(code)
+            print(arek)
+
+            if nama in arek and password == "pronto":
+                try:
+                    with open('p.html', 'rb') as f:
+                        content = f.read()
+                    self.send_response(200)
+                    self.send_header('Content-type', 'text/html')
+                    self.end_headers()
+                    self.wfile.write(content)
+                except FileNotFoundError:
+                    self.send_response(500)
+                    self.send_header('Content-type', 'text/plain')
+                    self.end_headers()
+                    self.wfile.write(b'Success file not found.')
+            else:
+                # Balasan jika gagal login
+                self.send_response(401)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b'Login gagal. Username atau password salah.')
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+# Jalankan server
+server = HTTPServer(('localhost', 8080), MyHandler)
+print("Server running on http://localhost:8080")
+server.serve_forever()
