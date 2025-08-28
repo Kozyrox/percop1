@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Form</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <input type="text" id="name" placeholder="Username"><br>
+    <input type="password" id="pass" placeholder="Password"><br>
+    <button onclick="kirimData()">Kirim</button>
+
+    <script>
+        function kirimData() {
+            const nama = document.getElementById('name').value;
+            const pass = document.getElementById('pass').value;
+
+            fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nama, pass })
+            })
+            .then(response => {
+                if (response.status === 200) {
+                    return response.text().then(html => {
+                        // Ganti seluruh halaman dengan konten dari server (success.html)
+                        document.open();
+                        document.write(html);
+                        document.close();
+                    });
+                } else {
+                    return response.text().then(msg => {
+                        alert("Login gagal: " + msg);
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("Terjadi error:", err);
+                alert("Gagal mengirim data ke server.");
+            });
+        }
+    </script>
+</body>
+</html>
